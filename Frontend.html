@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serviu</title>
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Fuentes y fondo general */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+      
+        /* Sidebar (Menú lateral) */
+        .sidebar {
+            width: 260px;
+            background-color: #f8f9fa;
+            color: #343a40;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+            border-right: 2px solid #e0e0e0;
+        }
+        .sidebar h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #d32f2f;
+        }
+        .sidebar a {
+            color: #343a40;
+            display: block;
+            padding: 12px 15px;
+            text-decoration: none;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .sidebar a:hover {
+            background-color: #e0e0e0;
+        }
+        .sidebar a.active {
+            background-color: #d32f2f;
+            color: #fff;
+            font-weight: bold;
+        }
+      
+        /* Encabezado del contenido */
+        .content h1 {
+            background: linear-gradient(45deg, #d32f2f, #e53935);
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+      
+        /* Área de contenido principal */
+        .content {
+            margin-left: 280px; /* Se aumenta el margen para dar espacio al nuevo ancho del sidebar */
+            padding: 25px;
+            background-color: #fff;
+            min-height: 100vh;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+      
+        /* Estilo para el contenedor de login */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #f2f2f2;
+            background-image: url('fondo_login.png');
+            background-position: center;
+            background-size: cover; 
+        }
+        .login-box {
+            width: 300px;
+            padding: 20px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background-color: rgba(255,255,255,0.95);
+        }
+        .login-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s ease;
+        }
+        .login-box input:focus {
+            border-color: #d32f2f;
+            outline: none;
+        }
+      
+        /* Formularios e Inputs generales */
+        input.form-control {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            transition: border-color 0.3s ease;
+        }
+        input.form-control:focus {
+            border-color: #d32f2f;
+            box-shadow: 0 0 5px rgba(211,47,47,0.5);
+            outline: none;
+        }
+        .table td input.form-control {
+            width: 150px; /* Ancho de los primeros 3 inputs */
+            display: inline-block;
+        }
+
+        .table td textarea.form-control {
+            width: 500px; /* Ancho del textarea */
+            display: inline-block;
+        }
+      
+        /* Botones */
+        .btn-primary {
+            background-color: #d32f2f;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #c62828;
+        }
+        .btn-secondary {
+            background-color: #616161;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+        }
+        .btn-info {
+            background-color: #1976d2;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+        }
+      </style>
+</head>
+<body>
+    <div id="app">
+        <div v-if="vista !=='login'" class="sidebar">
+            <h3>Serviu</h3>
+            <template v-if="vista === 'user' || vista === 'userP'">
+                <a href="#" :class="{active: vista === 'user'}" @click="vista = 'user'">Mis Proyectos</a>
+                <a href="#" :class="{active: vista === 'userP'}" @click="vista = 'userP'">Actualizar Proyecto</a>
+            </template>
+            <template v-if="vista === 'detalles'">
+                <a href="#" :class="{active: vista === 'admin'}" @click="vista = 'admin'">Inicio</a>
+                <a href="#" :class="{active: vista === 'detalles'}" @click="vista = 'detalles'">Detalles del Proyecto</a>
+            </template>
+            <template v-if ="vista === 'admin' || vista === 'cargos' || vista === 'crearP' || vista === 'crearA' || vista === 'crearF' || vista === 'actualizarP' || vista === 'actualizarA' || vista === 'actualizarF' || vista === 'eliminarP' || vista === 'eliminarA' || vista === 'eliminarF'">
+                <a href="#" :class="{active: vista === 'admin'}" @click="vista = 'admin'">Inicio</a>
+                <a href="#" :class="{active: vista === 'cargos'}" @click="vista = 'cargos'">Usuarios</a>
+                <a href="#" :class="{active: vista === 'crearP'}" @click="vista = 'crearP'">Crear Proyecto</a>
+                <a href="#" :class="{active: vista === 'crearA'}" @click="vista = 'crearA'">Crear Administrador</a>
+                <a href="#" :class="{active: vista === 'crearF'}" @click="vista = 'crearF'">Crear FTO</a>
+                <a href="#" :class="{active: vista === 'actualizarP'}" @click="vista = 'actualizarP'">Actualizar Proyecto</a>
+                <a href="#" :class="{active: vista === 'actualizarA'}" @click="vista = 'actualizarA'">Actualizar Administrador</a>
+                <a href="#" :class="{active: vista === 'actualizarF'}" @click="vista = 'actualizarF'">Actualizar FTO</a>
+                <a href="#" :class="{active: vista === 'eliminarP'}" @click="vista = 'eliminarP'">Eliminar Proyecto</a>
+                <a href="#" :class="{active: vista === 'eliminarA'}" @click="vista = 'eliminarA'">Eliminar Administrador</a>
+                <a href="#" :class="{active: vista === 'eliminarF'}" @click="vista = 'eliminarF'">Eliminar FTO</a>
+            </template>
+        </div>
+        <div class="content">
+            <h1 class="text-center">{{ tituloPagina }}</h1>
+            <div v-if="vista === 'login'" class="login-container">
+                <div class="login-box">
+                    <h2>Inicio de sesión</h2>
+                    <input v-model="username" type="text" placeholder="Nombre de usuario">
+                    <input v-model="password" type="password" placeholder="Contraseña" @keyup.enter="handleLogin('admin')">
+                    <button class="btn btn-primary w-100 mt-2" @click="handleLogin('admin')">Login</button>
+                </div>
+            </div>
+            <div v-if="vista === 'admin'">
+                <h2>Panel de Administrador</h2>
+                <div class="d-flex flex-wrap">
+                    <button class="btn btn-warning m-2" @click="vista = 'crearP'">Crear Proyecto</button>
+                    <button class="btn btn-danger m-2" @click="vista= 'eliminarP'">Eliminar Proyecto</button>
+                    <button class="btn btn-warning m-2" @click="vista = 'actualizarP'">Actualizar Proyecto</button>
+                </div>
+                <div class="d-flex flex-wrap">
+                    <button class="btn btn-warning m-2" @click="vista ='crearA'">Crear Administrador</button>
+                    <button class="btn btn-danger m-2" @click="vista = 'eliminarA'">Eliminar Administrador</button>
+                    <button class="btn btn-warning m-2" @click="vista = 'actualizarA'">Actualizar Administrador</button>
+                </div>
+                <div class="d-flex flex-wrap">
+                    <button class="btn btn-warning m-2" @click="vista='crearF'">Crear FTO</button>
+                    <button class="btn btn-danger m-2" @click="vista = 'eliminarF'">Eliminar FTO</button>
+                    <button class="btn btn-warning m-2" @click="vista = 'actualizarF'">Actualizar FTO</button>
+                </div>
+                <h3>Lista de Proyectos</h3>
+                <input v-model="searchQuery" type="text" class="form-control mb-3" placeholder="Buscar por Nombre de Proyecto o Código">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" v-for="proyecto in filteredProyectos" :key="proyecto.id">
+                        <div>
+                            <strong>CODIGO:</strong> {{ proyecto.CODIGO }}<br>
+                            <strong>NOMBRE PROYECTO:</strong> {{ proyecto.NOMBRE_PROYECTO }}<br>
+                            <strong>COMUNA:</strong> {{ proyecto.COMUNA }}<br>
+                            <strong>NOMBRE FTO:</strong> {{ proyecto.NOMBRE_FTO }}<br>
+                            <strong>PORCENTAJE DE AVANCE REAL ACUMULADO A LA FECHA:</strong> {{ proyecto.PORCENTAJE_DE_AVANCE_REAL_ACUMULADO_A_LA_FECHA }}
+                        </div>
+                        <button class="btn btn-info btn-sm" @click="verDetalles(proyecto.id)">Detalles</button>
+                    </li>
+                </ul>
+            </div>
+            <div v-if="vista === 'detalles'">
+                <h2>Detalles del Proyecto</h2>
+                <div class="mb-3">
+                    <h3>Información General</h3>
+                    <div>
+                        <label class="form-label">Nombre Proyecto</label>
+                        <input :value="proyectoDetalles.NOMBRE_PROYECTO" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Nombre FTO</label>
+                        <input :value="proyectoDetalles.NOMBRE_FTO" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Código</label>
+                        <input :value="proyectoDetalles.CODIGO" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Dirección</label>
+                        <input :value="proyectoDetalles.DIRECCION" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Comuna</label>
+                        <input :value="proyectoDetalles.COMUNA" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Entidad Patrocinante</label>
+                        <input :value="proyectoDetalles.ENTIDAD_PATROCINANTE" type="text" class="form-control" disabled>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h3>Fechas</h3>
+                    <div>
+                        <label class="form-label">Fecha Inicio</label>
+                        <input :value="proyectoDetalles.FECHA_INICIO" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Fecha Término Programada</label>
+                        <input :value="proyectoDetalles.FECHA_TERMINO_PROGRAMADA" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Plazo Ejecución de Obras</label>
+                        <input :value="proyectoDetalles.PLAZO_EJECUCION_DE_OBRAS" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Fecha Vigencia Garantía CTTO EC</label>
+                        <input :value="proyectoDetalles.FECHA_VIGENCIA_GARANTIA_CTTO_EC" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Plazo Ejecución de CCTTO FTO</label>
+                        <input :value="proyectoDetalles.PLAZO_EJECUCION_DE_CCTTO_FTO" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Fecha Vigencia Garantía CTTO FTO</label>
+                        <input :value="proyectoDetalles.FECHA_VIGENCIA_GARANTIA_CTTO_FTO" type="text" class="form-control" disabled>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h3>Gráfica</h3>
+                    <canvas id="avanceGrafica"></canvas>
+                    <div>
+                        <label class="form-label">Porcentaje de Avance Real Semanal Actual</label>
+                        <input :value="proyectoDetalles.PORCENTAJE_DE_AVANCE_REAL_SEMANAL_ACTUAL" type="text" class="form-control" disabled>
+                    </div>
+                    <div>
+                        <label class="form-label">Porcentaje de Avance Real Acumulado a la Fecha</label>
+                        <input :value="proyectoDetalles.PORCENTAJE_DE_AVANCE_REAL_ACUMULADO_A_LA_FECHA" type="text" class="form-control" disabled>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h3>Tabla de Certificaciones</h3>
+                    <div style="overflow-y: auto; max-height: 400px;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">Certificación</th>
+                                    <th style="width: 10%;">N de Ingreso de Documentación</th>
+                                    <th style="width: 10%;">Fecha de Ingreso de Documentación</th>
+                                    <th style="width: 10%;">Plazo Normativo Asociado a Certificación</th>
+                                    <th style="width: 60%;">Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(value, index) in proyectoDetalles.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL" :key="index">
+                                    <td>{{ value }}</td>
+                                    <td>{{ proyectoDetalles.N_DE_INGRESO_DE_DOCUMENTACION[index] }}</td>
+                                    <td>{{ proyectoDetalles.FECHA_DE_INGRESO_DE_DOCUMENTACION[index] }}</td>
+                                    <td>{{ proyectoDetalles.PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION[index] }}</td>
+                                    <td>{{ proyectoDetalles.OBSERVACIONES[index] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div v-if="vista === 'cargos'">
+                <h2>Lista de Usuarios</h2>
+                <h3>Administradores</h3>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" v-for="admin in administradores" :key="admin.id">
+                        <div>
+                            <strong>ID:</strong> {{ admin.id }}<br>
+                            <strong>Nombre:</strong> {{ admin.nombre }}<br>
+                            <strong>Correo:</strong> {{ admin.correo }}
+                        </div>
+                    </li>
+                </ul>
+                <h3>FTOs</h3>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" v-for="fto in ftos" :key="fto.id">
+                        <div>
+                            <strong>ID:</strong> {{ fto.id }}<br>
+                            <strong>Nombre:</strong> {{ fto.nombre }}<br>
+                            <strong>Correo:</strong> {{ fto.correo }}
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div v-if="vista === 'crearP'">
+                <h2>Crear Proyecto</h2>
+                <form @submit.prevent="crearProyecto">
+                    <select v-model="ftoSeleccionado" @change="seleccionarFTOC" class="form-control" id="nombre">
+                        <option value="" disabled>selecionar solamente si quieres cambiar el FTO</option>
+                        <option v-for="fto in ftos" :value="fto.id" :key="fto.id">
+                            {{ fto.nombre }}
+                        </option>
+                    </select>
+                    <div v-for="(value, key) in nuevoProyecto" :key="key" class="mb-3">
+                        <div v-if="key !== 'id_fto' && key !== 'NOMBRE_FTO'">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input v-model="nuevoProyecto[key]" :id="key" type="text" class="form-control">
+                        </div>
+                        <div v-else class="mb-3">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input :value="nuevoProyecto[key]" type="text" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'crearA'">
+                <h2>Crear Administrador</h2>
+                <form @submit.prevent="crearAdministrador">
+                    <div v-for="(value, key) in nuevoAdministrador" :key="key" class="mb-3">
+                        <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                        <input v-model="nuevoAdministrador[key]" :id="key" type="text" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'crearF'">
+                <h2>Crear FTO</h2>
+                <form @submit.prevent="crearFTO">
+                    <div v-for="(value, key) in nuevoFTO" :key="key" class="mb-3">
+                        <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                        <input v-model="nuevoFTO[key]" :id="key" type="text" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'actualizarP'">
+                <h2>Actualizar Proyecto</h2>
+                <form @submit.prevent="actualizarProyecto">
+                    <div class="mb-3">
+                        <label for="NOMBRE_PROYECTO" class="form-label">Seleccionar Proyecto</label>
+                        <select v-model="proyectoSeleccionado" @change="seleccionarProyecto" class="form-control">
+                            <option v-for="proyecto in proyectos" :value="proyecto.id" :key="proyecto.id">{{ proyecto.NOMBRE_PROYECTO }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fto" class="form-label">Seleccionar FTO</label>
+                        <select v-model="proyectoAActualizar.id_fto" @change="seleccionarFTO" class="form-control">
+                            <option v-for="fto in ftos" :value="fto.id" :key="fto.id">{{ fto.nombre }}</option>
+                        </select>
+                    </div>
+                    <template v-for="(value, key) in proyectoAActualizar" :key="key">
+                        <div v-if="!['CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL', 'N_DE_INGRESO_DE_DOCUMENTACION', 'FECHA_DE_INGRESO_DE_DOCUMENTACION', 'PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION', 'OBSERVACIONES', 'PORCENTAJE_DE_AVANCE_REAL_HISTORICO', 'PORCENTAJES_DE_AVANCE_PROGRAMADO'].includes(key)" class="mb-3">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input v-model="proyectoAActualizar[key]" :id="key" type="text" class="form-control" :disabled="['id', 'id_fto', 'NOMBRE_FTO', 'CODIGO'].includes(key)">
+                        </div>
+                    </template>
+                    <h3>Gráfica de Avance</h3>
+                    <canvas id="avanceGrafica"></canvas>
+                    <div class="input-group mb-3">
+                        <input v-model="nuevoPunto" type="text" class="form-control" placeholder="Nuevo Punto">
+                        <button type="button" class="btn btn-secondary" @click="agregarPunto('PORCENTAJE_DE_AVANCE_REAL_HISTORICO')">Agregar Punto Real</button>
+                        <button type="button" class="btn btn-secondary" @click="agregarPunto('PORCENTAJES_DE_AVANCE_PROGRAMADO')">Agregar Punto Programado</button>
+                        <button type="button" class="btn btn-danger" @click="eliminarPunto('PORCENTAJE_DE_AVANCE_REAL_HISTORICO')">Eliminar Último Punto Real</button>
+                        <button type="button" class="btn btn-danger" @click="eliminarPunto('PORCENTAJES_DE_AVANCE_PROGRAMADO')">Eliminar Último Punto Programado</button>
+                    </div>
+                    <h3>Certificaciones</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Certificación</th>
+                                <th>Número de Ingreso</th>
+                                <th>Fecha de Ingreso</th>
+                                <th>Plazo Normativo</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(cert, index) in proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL" :key="index">
+                                <td><input v-model="proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL[index]" type="text" class="form-control"></td>
+                                <td><input v-model="proyectoAActualizar.N_DE_INGRESO_DE_DOCUMENTACION[index]" type="text" class="form-control"></td>
+                                <td><input v-model="proyectoAActualizar.FECHA_DE_INGRESO_DE_DOCUMENTACION[index]" type="text" class="form-control"></td>
+                                <td><input v-model="proyectoAActualizar.PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION[index]" type="text" class="form-control"></td>
+                                <td><textarea v-model="proyectoAActualizar.OBSERVACIONES[index]" class="form-control" rows="auto" style="resize: none;" @input="autoResize($event)"></textarea></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" style="width: 170px; height: 40px;" @click="agregarFilaTabla">Agregar Fila</button>
+                            <button type="button" class="btn btn-danger" style="width: 170px; height: 40px;" @click="eliminarFilaTabla">Eliminar Última Fila</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100px;">Guardar</button>
+                    </div>
+                </form>
+            </div>
+            <div v-if="vista === 'actualizarA'">
+                <h2>Actualizar Administrador</h2>
+                <form @submit.prevent="actualizarAdministrador">
+                    <div class="mb-3">
+                        <label for="ID_ADMINISTRADOR" class="form-label">Nombre Administrador</label>
+                        <select v-model="administradorSeleccionado" @change="seleccionarAdministrador" class="form-control" id="ID_ADMINISTRADOR">
+                            <option value="" disabled>Por favor selecciona una opción:</option>
+                            <option v-for="admin in administradores" :value="admin.id" :key="admin.id">
+                                {{ admin.nombre }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-for="(value, key) in administradorAActualizar" :key="key" class="mb-3">
+                        <div v-if="key !== 'id' && key !== 'proyectos'">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input v-model="administradorAActualizar[key]" :id="key" type="text" class="form-control">
+                        </div>
+                        <div v-else class="mb-3">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input :value="administradorAActualizar[key]" type="text" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Guardar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'actualizarF'">
+                <h2>Actualizar FTO</h2>
+                <form @submit.prevent="actualizarFTO">
+                    <div class="mb-3">
+                        <label for="ID_FTO" class="form-label">Nombre del FTO</label>
+                        <select v-model="ftoSeleccionado" @change="seleccionarFTOS" class="form-control" id="ID_FTO">
+                            <option value="" disabled>Por favor selecciona una opción:</option>
+                            <option v-for="fto in ftos" :value="fto.id" :key="fto.id">
+                                {{ fto.nombre }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-for="(value, key) in ftoAActualizar" :key="key" class="mb-3">
+                        <div v-if="key !== 'id' && key !== 'proyectos'">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input v-model="ftoAActualizar[key]" :id="key" type="text" class="form-control">
+                        </div>
+                        <div v-else class="mb-3">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input :value="ftoAActualizar[key]" type="text" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Guardar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'eliminarP'">
+                <h2>Eliminar Proyecto</h2>
+                <form @submit.prevent="eliminarProyecto">
+                    <div class="mb-3">
+                        <label for="id" class="form-label">Codigo del Proyecto</label>
+                        <input v-model="proyectoAEliminar.id" type="text" class="form-control" id="id">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombreProyecto" class="form-label">Nombre del Proyecto</label>
+                        <input v-model="proyectoAEliminar.nombreProyecto" type="text" class="form-control" id="nombreProyecto">
+                    </div>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'eliminarA'">
+                <h2>Eliminar Administrador</h2>
+                <form @submit.prevent="eliminarAdministrador">
+                    <div class="mb-3">
+                        <label for="id" class="form-label">ID del Administrador</label>
+                        <input v-model="administradorAEliminar.id" type="text" class="form-control" id="id">
+                    </div>
+                    <div class="mb-3">
+                        <label for="correo" class="form-label">correo del Administrador</label>
+                        <input v-model="administradorAEliminar.correo" type="text" class="form-control" id="correo">
+                    </div>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'eliminarF'">
+                <h2>Eliminar FTO</h2>
+                <form @submit.prevent="eliminarFTO">
+                    <div class="mb-3">
+                        <label for="id" class="form-label">ID del FTO</label>
+                        <input v-model="ftoAEliminar.id" type="text" class="form-control" id="id">
+                    </div>
+                    <div class="mb-3">
+                        <label for="correo" class="form-label">correo del FTO</label>
+                        <input v-model="ftoAEliminar.correo" type="text" class="form-control" id="correo">
+                    </div>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+            <div v-if="vista === 'user'">
+                <h2>Panel de Usuario</h2>
+                <button class="btn btn-warning m-2" @click="vista = 'userP'">Actualizar Proyecto</button>
+                <h3>Mis Proyectos</h3>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" v-for="proyecto in misProyectos" :key="proyecto.id">
+                        <div>
+                            <strong>CODIGO:</strong> {{ proyecto.CODIGO }}<br>
+                            <strong>NOMBRE_PROYECTO:</strong> {{ proyecto.NOMBRE_PROYECTO }}<br>
+                            <strong>COMUNA:</strong> {{ proyecto.COMUNA }}<br>
+                            <strong>NOMBRE FTO:</strong> {{ proyecto.NOMBRE_FTO }}<br>
+                            <strong>PORCENTAJE DE AVANCE REAL ACUMULADO A LA FECHA:</strong> {{ proyecto.PORCENTAJE_DE_AVANCE_REAL_ACUMULADO_A_LA_FECHA }}
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div v-if="vista === 'userP'">
+                <h2>Actualizar Proyecto</h2>
+                <form @submit.prevent="actualizarProyecto">
+                    <div class="mb-3">
+                        <label for="NOMBRE_PROYECTO" class="form-label">Seleccionar Proyecto</label>
+                        <select v-model="proyectoSeleccionado" @change="seleccionarProyecto" class="form-control">
+                            <option v-for="proyecto in misProyectos" :value="proyecto.id" :key="proyecto.id">{{ proyecto.NOMBRE_PROYECTO }}</option>
+                        </select>
+                    </div>
+                    <template v-for="(value, key) in proyectoAActualizar" :key="key">
+                        <div v-if="!['CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL', 'N_DE_INGRESO_DE_DOCUMENTACION', 'FECHA_DE_INGRESO_DE_DOCUMENTACION', 'PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION', 'OBSERVACIONES', 'PORCENTAJE_DE_AVANCE_REAL_HISTORICO', 'PORCENTAJES_DE_AVANCE_PROGRAMADO'].includes(key)" class="mb-3">
+                            <label :for="key" class="form-label">{{ key.replace(/_/g, ' ') }}</label>
+                            <input v-model="proyectoAActualizar[key]" :id="key" type="text" class="form-control" :disabled="['id', 'id_fto', 'NOMBRE_FTO', 'CODIGO', 'NOMBRE_PROYECTO', 'ENTIDAD_PATROCINANTE', 'COMUNA', 'DIRECCION'].includes(key)">
+                        </div>
+                    </template>
+                    <h3>Gráfica de Avance</h3>
+                    <canvas id="avanceGrafica"></canvas>
+                    <div class="input-group mb-3">
+                        <input v-model="nuevoPunto" type="text" class="form-control" placeholder="Nuevo Punto">
+                        <button type="button" class="btn btn-secondary" @click="agregarPunto('PORCENTAJE_DE_AVANCE_REAL_HISTORICO')">Agregar Avance Real</button>
+                        <button type="button" class="btn btn-secondary" @click="agregarPunto('PORCENTAJES_DE_AVANCE_PROGRAMADO')">Agregar Avance Programado</button>
+                        <button type="button" class="btn btn-danger" @click="eliminarPunto('PORCENTAJE_DE_AVANCE_REAL_HISTORICO')">Eliminar Último Avance Real</button>
+                        <button type="button" class="btn btn-danger" @click="eliminarPunto('PORCENTAJES_DE_AVANCE_PROGRAMADO')">Eliminar Último Avance Programado</button>
+                    </div>
+                    <h3>Certificaciones</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Certificación</th>
+                                <th>Número de Ingreso</th>
+                                <th>Fecha de Ingreso</th>
+                                <th>Plazo Normativo</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(cert, index) in proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL" :key="index">
+                                <td><input v-model="proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL[index]" type="text" class="form-control"></td>
+                                <td><input v-model="proyectoAActualizar.N_DE_INGRESO_DE_DOCUMENTACION[index]" type="text" class="form-control"></td>
+                                <td><input v-model="proyectoAActualizar.FECHA_DE_INGRESO_DE_DOCUMENTACION[index]" type="text" class="form-control"></td>
+                                <td><input v-model="proyectoAActualizar.PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION[index]" type="text" class="form-control"></td>
+                                <td><textarea v-model="proyectoAActualizar.OBSERVACIONES[index]" class="form-control" rows="auto" style="resize: none;" @input="autoResize($event)"></textarea></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" style="width: 170px; height: 40px;" @click="agregarFilaTabla">Agregar Fila</button>
+                            <button type="button" class="btn btn-danger" style="width: 170px; height: 40px;" @click="eliminarFilaTabla">Eliminar Última Fila</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100px;">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        Vue.createApp({
+            data() {
+                return {
+                    tituloPagina: 'Serviu',
+                    vista: 'login',
+                    usuarioId: null,
+                    username: '',
+                    password: '',
+                    proyectos: [],
+                    administradores: [],
+                    ftos: [],
+                    nuevoProyecto: {
+                        id_fto: '',
+                        NOMBRE_FTO: '',
+                        NOMBRE_PROYECTO: '',
+                        CODIGO: '',
+                        DIRECCION: '',
+                        COMUNA: '',
+                        ENTIDAD_PATROCINANTE: '',
+                        FECHA_INICIO: '',
+                        FECHA_TERMINO_PROGRAMADA: '',
+                        PLAZO_EJECUCION_DE_OBRAS: '',
+                        FECHA_VIGENCIA_GARANTIA_CTTO_EC: '',
+                        PLAZO_EJECUCION_DE_CCTTO_FTO: '',
+                    },
+                    proyectoAEliminar: {
+                        id: '',
+                        nombreProyecto: ''
+                    },
+                    proyectoSeleccionado: '',
+                    proyectoAActualizar: {
+                        id: '',
+                        id_fto: '',
+                        NOMBRE_FTO: '',
+                        NOMBRE_PROYECTO: '',
+                        CODIGO: '',
+                        DIRECCION: '',
+                        COMUNA: '',
+                        ENTIDAD_PATROCINANTE: '',
+                        FECHA_INICIO: '',
+                        FECHA_TERMINO_PROGRAMADA: '',
+                        PLAZO_EJECUCION_DE_OBRAS: '',
+                        FECHA_VIGENCIA_GARANTIA_CTTO_EC: '',
+                        PLAZO_EJECUCION_DE_CCTTO_FTO: '',
+                        FECHA_VIGENCIA_GARANTIA_CTTO_FTO: '',
+                        PORCENTAJE_DE_AVANCE_REAL_SEMANAL_ACTUAL: '',
+                        PORCENTAJE_DE_AVANCE_REAL_ACUMULADO_A_LA_FECHA: '',
+                        PORCENTAJE_DE_AVANCE_REAL_HISTORICO: [], // Ensure this is an array
+                        PORCENTAJES_DE_AVANCE_PROGRAMADO: [], // Ensure this is an array
+                        CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL: [], // Ensure this is an array
+                        N_DE_INGRESO_DE_DOCUMENTACION: [], // Ensure this is an array
+                        FECHA_DE_INGRESO_DE_DOCUMENTACION: [], // Ensure this is an array
+                        PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION: [], // Ensure this is an array
+                        OBSERVACIONES: [], // Ensure this is an array
+                        },
+                    nuevoPunto: '',
+                    administradorSeleccionado: '',
+                    administradorAActualizar: {
+                        id: '',
+                        nombre: '',
+                        correo: '',
+                        clave: '',
+                        proyectos: []
+                    },
+                    administradorAEliminar: {
+                        id: '',
+                        correo: ''
+                    },
+                    ftoSeleccionado: '',
+                    ftoAActualizar: {
+                        id: '',
+                        nombre: '',
+                        correo: '',
+                        clave: '',
+                        proyectos: []
+                    },
+                    ftoAEliminar: {
+                        id: '',
+                        correo: ''
+                    },
+                    searchQuery: '',
+                    nuevoAdministrador: {
+                        nombre: '',
+                        correo: '',
+                        clave: ''
+                    },
+                    nuevoFTO: {
+                        nombre: '',
+                        correo: '',
+                        clave: ''
+                    },
+                    proyectoDetalles: {
+                        id: '',
+                        id_fto: '',
+                        NOMBRE_FTO: '',
+                        NOMBRE_PROYECTO: '',
+                        CODIGO: '',
+                        DIRECCION: '',
+                        COMUNA: '',
+                        ENTIDAD_PATROCINANTE: '',
+                        FECHA_INICIO: '',
+                        FECHA_TERMINO_PROGRAMADA: '',
+                        PLAZO_EJECUCION_DE_OBRAS: '',
+                        FECHA_VIGENCIA_GARANTIA_CTTO_EC: '',
+                        PLAZO_EJECUCION_DE_CCTTO_FTO: '',
+                        FECHA_VIGENCIA_GARANTIA_CTTO_FTO: '',
+                        PORCENTAJE_DE_AVANCE_REAL_SEMANAL_ACTUAL: '',
+                        PORCENTAJE_DE_AVANCE_REAL_ACUMULADO_A_LA_FECHA: '',
+                        PORCENTAJE_DE_AVANCE_REAL_HISTORICO: [],
+                        PORCENTAJES_DE_AVANCE_PROGRAMADO: [],
+                        CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL: [],
+                        N_DE_INGRESO_DE_DOCUMENTACION: [],
+                        FECHA_DE_INGRESO_DE_DOCUMENTACION: [],
+                        PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION: [],
+                        OBSERVACIONES: []
+                    }
+                };
+            },
+            computed: {
+                misProyectos() {
+                    return this.proyectos.filter(proyecto => proyecto.id_fto === this.usuarioId);
+                },
+                filteredProyectos() {
+                    return this.proyectos.filter(proyecto => {
+                        const query = this.searchQuery.toLowerCase();
+                        return proyecto.NOMBRE_PROYECTO.toLowerCase().includes(query) || proyecto.CODIGO.toLowerCase().includes(query);
+                    });
+                },
+                nombresProyectos() {
+                    return this.proyectos.map(proyecto => proyecto.NOMBRE_PROYECTO);
+                }
+            },
+            watch: {
+                vista(newVista, oldVista) {
+                    if (oldVista === 'admin') {
+                        this.proyectos = [];
+                    }
+                    if (newVista === 'admin') {
+                        this.getProyectos();
+                    }
+                    if (newVista === 'cargos') {
+                        this.getAdministradores();
+                        this.getFTOs();
+                    }
+                    if (newVista === 'crearP') {
+                        this.getFTOs();
+                    }
+                    if (newVista === 'actualizarP') {
+                        this.getProyectos();
+                        this.getFTOs();
+                    }
+                    if (newVista === 'actualizarA') {
+                        this.getAdministradores();
+                    }
+                    if (newVista === 'actualizarF') {
+                        this.getFTOs();
+                    }
+                    if (newVista === 'userP') {
+                    this.getProyectos();
+                }
+                }
+            },
+            methods: {
+                async getProyectos() {
+                    this.proyectos = await getProyectos();
+                },
+                async getAdministradores() {
+                    this.administradores = await getAdministradore();
+                },
+                async getFTOs() {
+                    this.ftos = await getFTO();
+                },
+                async handleLogin(tipo) {
+                    try {
+                        if (!this.username.includes('@')) {
+                            alert('El nombre de usuario debe contener el símbolo @.');
+                            return;
+                        }
+                        const response = await login(this.username, this.password);
+                        if (response == 'A') {
+                            this.vista = 'admin';
+                            this.proyectos = await getProyectos();
+                        } else if (response == 'F') {
+                            const fto = await getFTO();
+                            const usuario = fto.find(f => f.correo === this.username);
+                            this.usuarioId = usuario.id;
+                            this.vista = 'user';
+                            this.proyectos = await getProyectos();
+                        } else {
+                            alert('Usuario o contraseña incorrectos');
+                        }
+                    } catch (error) {
+                        alert('tipo de error: ' + error.message);
+                    }
+                },
+                async crearProyecto() {
+                    for (const key in this.nuevoProyecto) {
+                        if (this.nuevoProyecto[key] === '') {
+                            alert(`El campo ${key} no puede estar vacío.`);
+                            return;
+                        }
+                    }
+                    const nuevoProyecto = {
+                        id: 'ID_DEL_PROYECTO',
+                        id_fto: this.nuevoProyecto.id_fto,
+                        NOMBRE_FTO: this.nuevoProyecto.NOMBRE_FTO,
+                        NOMBRE_PROYECTO: this.nuevoProyecto.NOMBRE_PROYECTO,
+                        CODIGO: this.nuevoProyecto.CODIGO,
+                        DIRECCION: this.nuevoProyecto.DIRECCION,
+                        COMUNA: this.nuevoProyecto.COMUNA,
+                        ENTIDAD_PATROCINANTE: this.nuevoProyecto.ENTIDAD_PATROCINANTE,
+                        FECHA_INICIO: this.nuevoProyecto.FECHA_INICIO,
+                        FECHA_TERMINO_PROGRAMADA: this.nuevoProyecto.FECHA_TERMINO_PROGRAMADA,
+                        PLAZO_EJECUCION_DE_OBRAS: this.nuevoProyecto.PLAZO_EJECUCION_DE_OBRAS,
+                        FECHA_VIGENCIA_GARANTIA_CTTO_EC: this.nuevoProyecto.FECHA_VIGENCIA_GARANTIA_CTTO_EC,
+                        PLAZO_EJECUCION_DE_CCTTO_FTO: this.nuevoProyecto.PLAZO_EJECUCION_DE_CCTTO_FTO,
+                        FECHA_VIGENCIA_GARANTIA_CTTO_FTO: '',
+                        PORCENTAJE_DE_AVANCE_REAL_SEMANAL_ACTUAL: '',
+                        PORCENTAJE_DE_AVANCE_REAL_ACUMULADO_A_LA_FECHA: '',
+                        PORCENTAJE_DE_AVANCE_REAL_HISTORICO: [],
+                        PORCENTAJES_DE_AVANCE_PROGRAMADO: [],
+                        CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL: [],
+                        N_DE_INGRESO_DE_DOCUMENTACION: [],
+                        FECHA_DE_INGRESO_DE_DOCUMENTACION: [],
+                        PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION: [],
+                        OBSERVACIONES: []
+                    };
+                    await createProyecto(nuevoProyecto);
+                    await asignarProyecto(this.ftoSeleccionado, nuevoProyecto.id);
+                    this.vista = 'admin';
+                    this.proyectos = await getProyectos();
+                },
+                seleccionarFTO(event) {
+                    const ftoId = event.target.value;
+                    const fto = this.ftos.find(f => f.id === ftoId);
+                    if (fto) {
+                        this.proyectoAActualizar.id_fto = fto.id;
+                        this.proyectoAActualizar.NOMBRE_FTO = fto.nombre;
+                    }
+                },
+                seleccionarFTOC(event) {
+                    const ftoId = event.target.value;
+                    const fto = this.ftos.find(f => f.id === ftoId);
+                    if (fto) {
+                        this.nuevoProyecto.id_fto = fto.id;
+                        this.nuevoProyecto.NOMBRE_FTO = fto.nombre;
+                    }
+                },
+                async eliminarProyecto() {
+                    if (confirm('¿Está seguro de que desea eliminar este proyecto?')) {
+                        try {
+                            const proyectos = await getProyectos();
+                            const proyecto = proyectos.find(p => p.CODIGO === this.proyectoAEliminar.CODIGO);
+                            if (proyecto && proyecto.NOMBRE_PROYECTO === this.proyectoAEliminar.nombreProyecto) {
+                                await deleteProyecto(proyecto.id);
+                                this.proyectos = this.proyectos.filter(p => p.CODIGO !== this.proyectoAEliminar.CODIGO);
+                                alert('Proyecto eliminado exitosamente');
+                                this.vista = 'admin';
+                            } else {
+                                alert('El CODIGO y el nombre del proyecto no coinciden');
+                            }
+                        } catch (error) {
+                            alert('Error al eliminar el proyecto: ' + error.message);
+                        }
+                    }
+                },
+                async crearAdministrador() {
+                    for (const key in this.nuevoAdministrador) {
+                        if (this.nuevoAdministrador[key] === '') {
+                            alert(`El campo ${key} no puede estar vacío.`);
+                            return;
+                        }
+                    }
+                    const nuevoAdministrador= {
+                        id: 'ID_DEL_admin',
+                        nombre: this.nuevoAdministrador.nombre,
+                        correo: this.nuevoAdministrador.correo,
+                        clave: this.nuevoAdministrador.clave,
+                        proyectos: [],
+
+                    };
+                    await createAdministrador(nuevoAdministrador);
+                    this.vista = 'admin';
+                    this.proyectos = await getProyectos();
+                },
+                async eliminarAdministrador() {
+                    if (confirm('¿Está seguro de que desea eliminar este administrador?')) {
+                        try {
+                            const administradores = await getAdministradore();
+                            const administrador = administradores.find(a => a.id === this.administradorAEliminar.id);
+
+                            if (administrador && administrador.correo === this.administradorAEliminar.correo) {
+                                await deleteAdministrador(this.administradorAEliminar.id);
+                                this.administradores = this.administradores.filter(a => a.id !== this.administradorAEliminar.id);
+                                alert('Administrador eliminado exitosamente');
+                                this.vista = 'admin';
+                            } else {
+                                alert('El ID y el correo del administrador no coinciden');
+                            }
+                        } catch (error) {
+                            alert('Error al eliminar el administrador: ' + error.message);
+                        }
+                    }
+                },
+                seleccionarAdministrador(event) {
+                    const adminId = event.target.value;
+                    const admin = this.administradores.find(a => a.id === adminId);
+                    if (admin) {
+                        this.administradorAActualizar = { ...admin };
+                    }
+                },
+                async actualizarAdministrador() {
+                    try {
+                        const administradorActualizado = { ...this.administradorAActualizar };
+                        const administrador = await updateAdministrador(administradorActualizado);
+                        const index = this.administradores.findIndex(a => a.id === administrador.id);
+                        if (index !== -1) {
+                            this.administradores.splice(index, 1, administrador);
+                            alert('Administrador actualizado exitosamente');
+                            this.vista = 'admin';
+                        } else {
+                            alert('Administrador no encontrado');
+                        }
+                    } catch (error) {
+                        alert('Error al actualizar el administrador: ' + error.message);
+                    }
+                },
+                async crearFTO() {
+                    for (const key in this.nuevoFTO) {
+                        if (this.nuevoFTO[key] === '') {
+                            alert(`El campo ${key} no puede estar vacío.`);
+                            return;
+                        }
+                    }
+                    const nuevoFTO = {
+                        id: 'ID_DEL_FTO',
+                        nombre: this.nuevoFTO.nombre,
+                        correo: this.nuevoFTO.correo,
+                        clave: this.nuevoFTO.clave,
+                        proyectos: [],
+                    };
+                    await createFTO(nuevoFTO);
+                    this.vista = 'admin';
+                    this.proyectos = await getProyectos();
+                },
+                async eliminarFTO() {
+                    if (confirm('¿Está seguro de que desea eliminar este FTO?')) {
+                        try {
+                            const ftos = await getFTO();
+                            const fto = ftos.find(f => f.id === this.ftoAEliminar.id);
+                            if (fto && fto.correo === this.ftoAEliminar.correo) {
+                                await deleteFTO(this.ftoAEliminar.id);
+                                this.ftos = this.ftos.filter(f => f.id !== this.ftoAEliminar.id);
+                                alert('FTO eliminado exitosamente');
+                                this.vista = 'admin';
+                            } else {
+                                alert('El ID y el correo del FTO no coinciden');
+                            }
+                        } catch (error) {
+                            alert('Error al eliminar el FTO: ' + error.message);
+                        }
+                    }
+                },
+                seleccionarFTOS(event) {
+                    const ftoId = event.target.value;
+                    const fto = this.ftos.find(f => f.id === ftoId);
+                    if (fto) {
+                        this.ftoAActualizar = { ...fto };
+                    }
+                },
+                async actualizarFTO() {
+                    try {
+                        const ftoActualizado = { ...this.ftoAActualizar };
+                        const fto = await updateFTO(ftoActualizado);
+                        const index = this.ftos.findIndex(f => f.id === fto.id);
+                        if (index !== -1) {
+                            this.ftos.splice(index, 1, fto);
+                            alert('FTO actualizado exitosamente');
+                            this.vista = 'admin';
+                        } else {
+                            alert('FTO no encontrado');
+                        }
+                    } catch (error) {
+                        alert('Error al actualizar el FTO: ' + error.message);
+                    }
+                },
+                renderGraficaDetalles() {
+                    const ctx = document.getElementById('avanceGrafica').getContext('2d');
+                    const fechas = this.generateDateLabels(this.proyectoDetalles.FECHA_INICIO, this.proyectoDetalles.FECHA_TERMINO_PROGRAMADA);
+                    const avanceReal = this.proyectoDetalles.PORCENTAJE_DE_AVANCE_REAL_HISTORICO.map(Number);
+                    const avanceProgramado = this.proyectoDetalles.PORCENTAJES_DE_AVANCE_PROGRAMADO.map(Number);
+                    if (this.proyectoDetalles.FECHA_INICIO && this.proyectoDetalles.FECHA_TERMINO_PROGRAMADA) {
+                        const fechas = this.generateDateLabels(this.proyectoDetalles.FECHA_INICIO, this.proyectoDetalles.FECHA_TERMINO_PROGRAMADA);
+                        console.log("Fechas generadas:", fechas);
+                    }
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: fechas,
+                            datasets: [
+                                {
+                                    label: 'Avance Real Histórico',
+                                    data: avanceReal,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    fill: false
+                                },
+                                {
+                                    label: 'Avance Programado',
+                                    data: avanceProgramado,
+                                    borderColor: 'rgba(153, 102, 255, 1)',
+                                    fill: false
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'category'
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+                },
+                verDetalles(id) {
+                    const proyecto = this.proyectos.find(p => p.id === id);
+                    if (proyecto) {
+                        this.proyectoDetalles = { ...proyecto };
+                        this.vista = 'detalles';
+                        this.$nextTick(() => {
+                            this.renderGraficaDetalles();
+                        });
+                    }
+                },
+                seleccionarProyecto() {
+                    const proyecto = this.proyectos.find(p => p.id === this.proyectoSeleccionado);
+                    if (proyecto) {
+                        this.proyectoAActualizar = { ...proyecto };
+                        this.$nextTick(() => {
+                            if (this.chart) {
+                                this.chart.destroy();
+                            }
+                            this.renderGrafica();
+                        });
+                    }
+                },
+                renderGrafica() {
+                    const ctx = document.getElementById('avanceGrafica').getContext('2d');
+                    const fechas = this.generateDateLabels(this.proyectoAActualizar.FECHA_INICIO, this.proyectoAActualizar.FECHA_TERMINO_PROGRAMADA);
+                    const avanceReal = this.proyectoAActualizar.PORCENTAJE_DE_AVANCE_REAL_HISTORICO.map(Number);
+                    const avanceProgramado = this.proyectoAActualizar.PORCENTAJES_DE_AVANCE_PROGRAMADO.map(Number);
+                    if (this.proyectoAActualizar.FECHA_INICIO && this.proyectoAActualizar.FECHA_TERMINO_PROGRAMADA) {
+                        const fechas = this.generateDateLabels(this.proyectoAActualizar.FECHA_INICIO, this.proyectoAActualizar.FECHA_TERMINO_PROGRAMADA);
+                        console.log("Fechas generadas:", fechas);
+                    }
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: fechas,
+                            datasets: [
+                                {
+                                    label: 'Avance Real Histórico',
+                                    data: avanceReal,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    fill: false
+                                },
+                                {
+                                    label: 'Avance Programado',
+                                    data: avanceProgramado,
+                                    borderColor: 'rgba(153, 102, 255, 1)',
+                                    fill: false
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'category'
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+                },
+                generateDateLabels(startDate, endDate) {
+                    let start = new Date(startDate);
+                    const end = new Date(endDate);
+                    const dates = [];
+                    while (start <= end) {
+                        dates.push(start.toISOString().split('T')[0]);
+                        start.setDate(start.getDate() + 7);
+                    }
+                    return dates;
+                },
+                async actualizarProyecto() {
+                    const proyectoActualizado = { ...this.proyectoAActualizar };
+                    await updateProyecto(proyectoActualizado);
+                    await asignarProyecto(this.proyectoAActualizar.id_fto, this.proyectoAActualizar.id);
+                    alert('Proyecto actualizado correctamente');
+                    this.vista = 'admin';
+                },
+                agregarFilaTabla() {
+                    this.proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL.push('');
+                    this.proyectoAActualizar.N_DE_INGRESO_DE_DOCUMENTACION.push('');
+                    this.proyectoAActualizar.FECHA_DE_INGRESO_DE_DOCUMENTACION.push('');
+                    this.proyectoAActualizar.PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION.push('');
+                    this.proyectoAActualizar.OBSERVACIONES.push('');
+                },
+                eliminarFilaTabla() {
+                    this.proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL.pop();
+                    this.proyectoAActualizar.N_DE_INGRESO_DE_DOCUMENTACION.pop();
+                    this.proyectoAActualizar.FECHA_DE_INGRESO_DE_DOCUMENTACION.pop();
+                    this.proyectoAActualizar.PLAZO_NORMATIVO_ASOCIADO_A_CERTIFICACION.pop();
+                    this.proyectoAActualizar.OBSERVACIONES.pop();
+                },
+                agregarPunto(arrayName) {
+                    this.proyectoAActualizar[arrayName].push(this.nuevoPunto);
+                    this.nuevoPunto = '';
+                    alert('Punto agregado correctamente');
+                },
+                eliminarPunto(arrayName) {
+                    this.proyectoAActualizar[arrayName].pop();
+                    alert('Punto eliminado correctamente');
+                },
+                autoResize(event) {
+                    event.target.style.height = 'auto';
+                    event.target.style.height = (event.target.scrollHeight) + 'px';
+                },
+            },
+        }).mount('#app');
+    </script>
+</body>
+</html>
