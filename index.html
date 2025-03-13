@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serviu</title>
+    <!-- Dos links para el estilo, el vue y el char para la grafica  -->
     <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/vue@3"></script>
-    <script src="api.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Fuentes y fondo general */
@@ -156,6 +156,7 @@
 </head>
 <body>
     <div id="app">
+        <!-- El sidebar con diefrentes vistas dependiendo del usuario -->
         <div v-if="vista !=='login'" class="sidebar">
             <h3>Serviu</h3>
             <template v-if="vista === 'user' || vista === 'userP'">
@@ -182,6 +183,7 @@
         </div>
         <div class="content">
             <h1 class="text-center">{{ tituloPagina }}</h1>
+            <!-- El login -->
             <div v-if="vista === 'login'" class="login-container">
                 <div class="login-box">
                     <h2>Inicio de sesión</h2>
@@ -190,6 +192,7 @@
                     <button class="btn btn-primary w-100 mt-2" @click="handleLogin('admin')">Login</button>
                 </div>
             </div>
+            <!-- La vista de panel de administrador con buscador por nombre de proyecto -->
             <div v-if="vista === 'admin'">
                 <h2>Panel de Administrador</h2>
                 <div class="d-flex flex-wrap">
@@ -222,6 +225,7 @@
                     </li>
                 </ul>
             </div>
+            <!-- La vista detalles con una grafica y tabla. es solo para visualizar -->
             <div v-if="vista === 'detalles'">
                 <h2>Detalles del Proyecto</h2>
                 <div class="mb-3">
@@ -316,6 +320,7 @@
                     </div>
                 </div>
             </div>
+            <!-- La vista de cargos con los usuarios y sus roles. lo puse por que para borrar fto y administrador ya que estos piden la id -->
             <div v-if="vista === 'cargos'">
                 <h2>Lista de Usuarios</h2>
                 <h3>Administradores</h3>
@@ -339,6 +344,7 @@
                     </li>
                 </ul>
             </div>
+            <!-- Las vistas de crear, actualizar y eliminar proyectos, administradores y fto -->
             <div v-if="vista === 'crearP'">
                 <h2>Crear Proyecto</h2>
                 <form @submit.prevent="crearProyecto">
@@ -533,6 +539,7 @@
                     <button type="submit" class="btn btn-danger">Eliminar</button>
                 </form>
             </div>
+            <!-- La vista de usuario con sus proyectos. solamente vera los proyectos del fto-->
             <div v-if="vista === 'user'">
                 <h2>Panel de Usuario</h2>
                 <button class="btn btn-warning m-2" @click="vista = 'userP'">Actualizar Proyecto</button>
@@ -549,6 +556,7 @@
                     </li>
                 </ul>
             </div>
+            <!-- La vista de actualizar proyecto para el fto-->
             <div v-if="vista === 'userP'">
                 <h2>Actualizar Proyecto</h2>
                 <form @submit.prevent="actualizarProyecto">
@@ -606,6 +614,8 @@
         </div>
     </div>
     <script>
+        // Funciones para interactuar con la APi Rest de gonzalo
+        // son los crud de cada entidad, ademas de la funcion de login y asignar proyecto en los ftos
         const API_URL = 'https://backftoserviu-9d1a7cb636f2.herokuapp.com';
         async function login(username, password) {
             // Obtener todos los administradores
@@ -770,6 +780,7 @@
     </script>
     <script>
         Vue.createApp({
+            // Aquí se definen las variables que se usaran en la vista y en los metodos
             data() {
                 return {
                     tituloPagina: 'Serviu',
@@ -887,6 +898,7 @@
                     }
                 };
             },
+            // Aquí se definen las variables computadas que se usaran
             computed: {
                 misProyectos() {
                     return this.proyectos.filter(proyecto => proyecto.id_fto === this.usuarioId);
@@ -901,6 +913,7 @@
                     return this.proyectos.map(proyecto => proyecto.NOMBRE_PROYECTO);
                 }
             },
+            // Aquí se definen los watchers que se usaran para actualizar las vistas cuando se cambie de vista
             watch: {
                 vista(newVista, oldVista) {
                     if (oldVista === 'admin') {
@@ -931,17 +944,22 @@
                 }
                 }
             },
+            // metodos que se usaran
             methods: {
                 async getProyectos() {
+                    // Obtener todos los proyectos
                     this.proyectos = await getProyectos();
                 },
                 async getAdministradores() {
+                    // Obtener todos los administradores
                     this.administradores = await getAdministradore();
                 },
                 async getFTOs() {
+                    // Obtener todos los FTOs
                     this.ftos = await getFTO();
                 },
                 async handleLogin(tipo) {
+                    // Manejar el login
                     try {
                         if (!this.username.includes('@')) {
                             alert('El nombre de usuario debe contener el símbolo @.');
@@ -965,6 +983,7 @@
                     }
                 },
                 async crearProyecto() {
+                    // Crear un nuevo proyecto
                     for (const key in this.nuevoProyecto) {
                         if (this.nuevoProyecto[key] === '') {
                             alert(`El campo ${key} no puede estar vacío.`);
@@ -1002,6 +1021,7 @@
                     this.proyectos = await getProyectos();
                 },
                 seleccionarFTO(event) {
+                    // Obtener el id del FTO seleccionado para la vista de actualizar proyecto
                     const ftoId = event.target.value;
                     const fto = this.ftos.find(f => f.id === ftoId);
                     if (fto) {
@@ -1010,6 +1030,7 @@
                     }
                 },
                 seleccionarFTOC(event) {
+                    // Obtener el id del FTO seleccionado para la vista de actualizar FTO
                     const ftoId = event.target.value;
                     const fto = this.ftos.find(f => f.id === ftoId);
                     if (fto) {
@@ -1018,6 +1039,7 @@
                     }
                 },
                 async eliminarProyecto() {
+                    // Eliminar un proyecto
                     if (confirm('¿Está seguro de que desea eliminar este proyecto?')) {
                         try {
                             const proyectos = await getProyectos();
@@ -1036,6 +1058,7 @@
                     }
                 },
                 async crearAdministrador() {
+                    // Crear un nuevo administrador
                     for (const key in this.nuevoAdministrador) {
                         if (this.nuevoAdministrador[key] === '') {
                             alert(`El campo ${key} no puede estar vacío.`);
@@ -1055,6 +1078,7 @@
                     this.proyectos = await getProyectos();
                 },
                 async eliminarAdministrador() {
+                    // Eliminar un administrador
                     if (confirm('¿Está seguro de que desea eliminar este administrador?')) {
                         try {
                             const administradores = await getAdministradore();
@@ -1074,6 +1098,7 @@
                     }
                 },
                 seleccionarAdministrador(event) {
+                    //  Obtener el id del administrador seleccionado para la vista de actualizar administrador
                     const adminId = event.target.value;
                     const admin = this.administradores.find(a => a.id === adminId);
                     if (admin) {
@@ -1081,6 +1106,7 @@
                     }
                 },
                 async actualizarAdministrador() {
+                    // Actualizar un administrador
                     try {
                         const administradorActualizado = { ...this.administradorAActualizar };
                         const administrador = await updateAdministrador(administradorActualizado);
@@ -1097,6 +1123,7 @@
                     }
                 },
                 async crearFTO() {
+                    // Crear un nuevo FTO
                     for (const key in this.nuevoFTO) {
                         if (this.nuevoFTO[key] === '') {
                             alert(`El campo ${key} no puede estar vacío.`);
@@ -1115,6 +1142,7 @@
                     this.proyectos = await getProyectos();
                 },
                 async eliminarFTO() {
+                    // Eliminar un FTO
                     if (confirm('¿Está seguro de que desea eliminar este FTO?')) {
                         try {
                             const ftos = await getFTO();
@@ -1133,6 +1161,7 @@
                     }
                 },
                 seleccionarFTOS(event) {
+                    // Obtener el id del FTO seleccionado para la vista de actualizar FTO
                     const ftoId = event.target.value;
                     const fto = this.ftos.find(f => f.id === ftoId);
                     if (fto) {
@@ -1140,6 +1169,7 @@
                     }
                 },
                 async actualizarFTO() {
+                    // Actualizar un FTO
                     try {
                         const ftoActualizado = { ...this.ftoAActualizar };
                         const fto = await updateFTO(ftoActualizado);
@@ -1156,6 +1186,7 @@
                     }
                 },
                 renderGraficaDetalles() {
+                    // Renderizar la gráfica de avance de un proyecto en la vista de detalles
                     const ctx = document.getElementById('avanceGrafica').getContext('2d');
                     const fechas = this.generateDateLabels(this.proyectoDetalles.FECHA_INICIO, this.proyectoDetalles.FECHA_TERMINO_PROGRAMADA);
                     const avanceReal = this.proyectoDetalles.PORCENTAJE_DE_AVANCE_REAL_HISTORICO.map(Number);
@@ -1197,6 +1228,7 @@
                     });
                 },
                 verDetalles(id) {
+                    // Ver los detalles de un proyecto
                     const proyecto = this.proyectos.find(p => p.id === id);
                     if (proyecto) {
                         this.proyectoDetalles = { ...proyecto };
@@ -1207,6 +1239,7 @@
                     }
                 },
                 seleccionarProyecto() {
+                    // Seleccionar un proyecto para actualizar en la vista de actualizar proyecto
                     const proyecto = this.proyectos.find(p => p.id === this.proyectoSeleccionado);
                     if (proyecto) {
                         this.proyectoAActualizar = { ...proyecto };
@@ -1219,6 +1252,7 @@
                     }
                 },
                 renderGrafica() {
+                    // Renderizar la gráfica de avance en la vista de actualizar proyecto y en la vista de userP
                     const ctx = document.getElementById('avanceGrafica').getContext('2d');
                     const fechas = this.generateDateLabels(this.proyectoAActualizar.FECHA_INICIO, this.proyectoAActualizar.FECHA_TERMINO_PROGRAMADA);
                     const avanceReal = this.proyectoAActualizar.PORCENTAJE_DE_AVANCE_REAL_HISTORICO.map(Number);
@@ -1260,6 +1294,7 @@
                     });
                 },
                 generateDateLabels(startDate, endDate) {
+                    // Generar las fechas para la gráfica de avance
                     let start = new Date(startDate);
                     const end = new Date(endDate);
                     const dates = [];
@@ -1270,6 +1305,7 @@
                     return dates;
                 },
                 async actualizarProyecto() {
+                    // Actualizar un proyecto
                     const proyectoActualizado = { ...this.proyectoAActualizar };
                     await updateProyecto(proyectoActualizado);
                     await asignarProyecto(this.proyectoAActualizar.id_fto, this.proyectoAActualizar.id);
@@ -1277,6 +1313,7 @@
                     this.vista = 'admin';
                 },
                 agregarFilaTabla() {
+                    // Agregar una fila a la tabla de certificaciones
                     this.proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL.push('');
                     this.proyectoAActualizar.N_DE_INGRESO_DE_DOCUMENTACION.push('');
                     this.proyectoAActualizar.FECHA_DE_INGRESO_DE_DOCUMENTACION.push('');
@@ -1284,6 +1321,7 @@
                     this.proyectoAActualizar.OBSERVACIONES.push('');
                 },
                 eliminarFilaTabla() {
+                    // Eliminar una fila de la tabla de certificaciones
                     this.proyectoAActualizar.CERTIFIACIONES_PARA_OBTENCION_DE_RECEPCION_FINAL.pop();
                     this.proyectoAActualizar.N_DE_INGRESO_DE_DOCUMENTACION.pop();
                     this.proyectoAActualizar.FECHA_DE_INGRESO_DE_DOCUMENTACION.pop();
@@ -1291,15 +1329,18 @@
                     this.proyectoAActualizar.OBSERVACIONES.pop();
                 },
                 agregarPunto(arrayName) {
+                    // Agregar un punto a la gráfica de avance
                     this.proyectoAActualizar[arrayName].push(this.nuevoPunto);
                     this.nuevoPunto = '';
                     alert('Punto agregado correctamente');
                 },
                 eliminarPunto(arrayName) {
+                    // Eliminar un punto de la gráfica de avance
                     this.proyectoAActualizar[arrayName].pop();
                     alert('Punto eliminado correctamente');
                 },
                 autoResize(event) {
+                    // Auto resize para los textarea el de la vista actualizar proyecto y userP
                     event.target.style.height = 'auto';
                     event.target.style.height = (event.target.scrollHeight) + 'px';
                 },
