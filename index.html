@@ -163,11 +163,13 @@
                 <!-- vista fto sidebar -->
                 <a href="#" :class="{active: vista === 'user'}" @click="vista = 'user'">Mis Proyectos</a>
                 <a href="#" :class="{active: vista === 'userP'}" @click="vista = 'userP'">Actualizar Proyecto</a>
+                <a href="#" @click="handleLogout">Cerrar Sesión</a>
             </template>
             <template v-if="vista === 'detalles'">
                 <!-- vista detalles admin sidebar -->
                 <a href="#" :class="{active: vista === 'admin'}" @click="vista = 'admin'">Inicio</a>
                 <a href="#" :class="{active: vista === 'detalles'}" @click="vista = 'detalles'">Detalles del Proyecto</a>
+                <a href="#" @click="handleLogout">Cerrar Sesión</a>
             </template>
             <template v-if ="vista === 'admin' || vista === 'cargos' || vista === 'crearP' || vista === 'crearA' || vista === 'crearF' || vista === 'actualizarP' || vista === 'actualizarA' || vista === 'actualizarF' || vista === 'eliminarP' || vista === 'eliminarA' || vista === 'eliminarF'">
                 <!-- vista admin sidebar -->
@@ -182,6 +184,7 @@
                 <a href="#" :class="{active: vista === 'eliminarP'}" @click="vista = 'eliminarP'">Eliminar Proyecto</a>
                 <a href="#" :class="{active: vista === 'eliminarA'}" @click="vista = 'eliminarA'">Eliminar Administrador</a>
                 <a href="#" :class="{active: vista === 'eliminarF'}" @click="vista = 'eliminarF'">Eliminar FTO</a>
+                <a href="#" @click="handleLogout">Cerrar Sesión</a>
             </template>
         </div>
         <div class="content">
