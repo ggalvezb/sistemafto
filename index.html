@@ -160,14 +160,17 @@
         <div v-if="vista !=='login'" class="sidebar">
             <h3>Serviu</h3>
             <template v-if="vista === 'user' || vista === 'userP'">
+                <!-- vista fto sidebar -->
                 <a href="#" :class="{active: vista === 'user'}" @click="vista = 'user'">Mis Proyectos</a>
                 <a href="#" :class="{active: vista === 'userP'}" @click="vista = 'userP'">Actualizar Proyecto</a>
             </template>
             <template v-if="vista === 'detalles'">
+                <!-- vista detalles admin sidebar -->
                 <a href="#" :class="{active: vista === 'admin'}" @click="vista = 'admin'">Inicio</a>
                 <a href="#" :class="{active: vista === 'detalles'}" @click="vista = 'detalles'">Detalles del Proyecto</a>
             </template>
             <template v-if ="vista === 'admin' || vista === 'cargos' || vista === 'crearP' || vista === 'crearA' || vista === 'crearF' || vista === 'actualizarP' || vista === 'actualizarA' || vista === 'actualizarF' || vista === 'eliminarP' || vista === 'eliminarA' || vista === 'eliminarF'">
+                <!-- vista admin sidebar -->
                 <a href="#" :class="{active: vista === 'admin'}" @click="vista = 'admin'">Inicio</a>
                 <a href="#" :class="{active: vista === 'cargos'}" @click="vista = 'cargos'">Usuarios</a>
                 <a href="#" :class="{active: vista === 'crearP'}" @click="vista = 'crearP'">Crear Proyecto</a>
@@ -345,6 +348,8 @@
                 </ul>
             </div>
             <!-- Las vistas de crear, actualizar y eliminar proyectos, administradores y fto -->
+            <!--estas vista funcionan de la siguiente manera, dependiendo de la los arrays de data 
+                que se use el v-for de la vista este pasara por cada posicion de este array y creara un input-->
             <div v-if="vista === 'crearP'">
                 <h2>Crear Proyecto</h2>
                 <form @submit.prevent="crearProyecto">
@@ -901,45 +906,56 @@
             // Aquí se definen las variables computadas que se usaran
             computed: {
                 misProyectos() {
+                    // Filtrar los proyectos del usuario
                     return this.proyectos.filter(proyecto => proyecto.id_fto === this.usuarioId);
                 },
                 filteredProyectos() {
+                    // Filtrar los proyectos por el query de búsqueda
                     return this.proyectos.filter(proyecto => {
                         const query = this.searchQuery.toLowerCase();
                         return proyecto.NOMBRE_PROYECTO.toLowerCase().includes(query) || proyecto.CODIGO.toLowerCase().includes(query);
                     });
                 },
                 nombresProyectos() {
+                    // Obtener los nombres de los proyectos
                     return this.proyectos.map(proyecto => proyecto.NOMBRE_PROYECTO);
                 }
             },
             // Aquí se definen los watchers que se usaran para actualizar las vistas cuando se cambie de vista
             watch: {
                 vista(newVista, oldVista) {
+                    // Actualizar los datos de la vista
                     if (oldVista === 'admin') {
                         this.proyectos = [];
                     }
                     if (newVista === 'admin') {
+                        // Obtener todos los proyectos
                         this.getProyectos();
                     }
                     if (newVista === 'cargos') {
+                        // Obtener todos los cargos
                         this.getAdministradores();
                         this.getFTOs();
                     }
                     if (newVista === 'crearP') {
+                        // Obtener todos los FTOs
                         this.getFTOs();
                     }
                     if (newVista === 'actualizarP') {
+                        // Obtener todos los FTOs
                         this.getProyectos();
                         this.getFTOs();
                     }
                     if (newVista === 'actualizarA') {
+                        // Obtener todos los administradores
                         this.getAdministradores();
                     }
                     if (newVista === 'actualizarF') {
+                        // Obtener todos los FTOs
                         this.getFTOs();
                     }
                     if (newVista === 'userP') {
+                        // Obtener todos los proyectos
                     this.getProyectos();
                 }
                 }
